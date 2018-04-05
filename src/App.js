@@ -10,7 +10,7 @@ class App extends Component {
       // can override it if the server has the application under some folder,
       // example /react-app
       <BrowserRouter>
-        <div className='App'>
+        <div>
           <Blog />
         </div>
       </BrowserRouter>
