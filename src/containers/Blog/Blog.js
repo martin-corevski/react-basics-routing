@@ -117,6 +117,11 @@ class Blog extends Component {
             But we cannot use them both (Redirect and Route render). This
             is a good example for 404 page
           */}
+          {/*
+            Route render can be used for sending props to another component,
+            example:
+            <Route render={() => <Component someProps='sendprops' />} />
+          */}
         </Switch>
       </div>
     )
