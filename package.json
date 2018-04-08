@@ -1,7 +1,7 @@
 {
-  "name": "react-basics-http",
+  "name": "react-basics-routing",
   "version": "1.0.0",
-  "description": "React http basics with axios",
+  "description": "React routing basics with react router",
   "main": "index.js",
   "browserslist": [
     "> 1%",
