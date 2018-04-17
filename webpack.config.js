@@ -157,7 +157,8 @@ module.exports = env => {
        * more on https://webpack.js.org/configuration/output/#output-filename
        * @type {String}
        */
-      filename: 'js/[hash].bundle.js'
+      filename: 'js/bundle.js',
+      chunkFilename: '[id].[hash].bundle.js'
     },
     /**
      * This option determines how the different types of modules in the project
@@ -172,7 +173,7 @@ module.exports = env => {
        * @return {Boolean}        True if the content doesn't need to be parsed
        */
       noParse: function (content) {
-        return /jquery|lodash/.test(content)
+        return /jquery/.test(content)
       },
       /**
        * Every element of the rules option array is an object containing
@@ -225,17 +226,19 @@ module.exports = env => {
         // HTML loader
         {
           test: /\.html$/,
-          use: [{
-            loader: 'html-loader',
-            options: {
-              /**
-               * This option will minimize the .html files, like UglifyJs does
-               * to .js files https://webpack.js.org/loaders/html-loader/#examples
-               * @type {Boolean}
-               */
-              minimize: !debug // if in production mode minimize html file
+          use: [
+            {
+              loader: 'html-loader',
+              options: {
+                /**
+                 * This option will minimize the .html files, like UglifyJs does
+                 * to .js files https://webpack.js.org/loaders/html-loader/#examples
+                 * @type {Boolean}
+                 */
+                minimize: !debug // if in production mode minimize html file
+              }
             }
-          }]
+          ]
         },
         // SCSS, CSS loaders
         {
@@ -244,25 +247,32 @@ module.exports = env => {
             // postcss loader is used in order for autoprefixer to auto add
             // browser specific prefixes
             use: [
-              'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
+              {
+                // the css loader is set up to use CSS modules spec.
+                // More on https://github.com/webpack-contrib/css-loader#modules
+                loader: 'css-loader',
+                options: {
+                  modules: true,
+                  importLoaders: 2, // postcss and sass
+                  localIdentName: '[name]___[local]___[hash:base64:5]'
+                }
+              },
               'postcss-loader',
               'sass-loader'
             ],
-            // the css loader is set up to use CSS modules spec.
-            // More on https://github.com/webpack-contrib/css-loader#modules
             fallback: 'style-loader'
           })
         },
         // File loader for pictures
         {
-          test: /\.(jpg|png|gif|svg)$/,
+          test: /\.(jpe?g|png|gif|svg)$/,
           use: [
             {
-              loader: 'file-loader',
+              loader: 'url-loader',
               options: {
-                name: '[name].[ext]',
-                outputPath: './assets/',
-                publicPath: './assets/'
+                limit: 8192, // return DataURL if image size <= 8KB
+                name: 'assets/[name].[ext]',
+                fallback: 'file-loader' // use file loader for size > 8KB
               }
             }
           ]
@@ -279,58 +289,62 @@ module.exports = env => {
      * we need to setup the optimization option.
      * @type {Object}
      */
-    optimization: debug ? {} : {
-      /**
-       * For production we can uglify the .js files.
-       * @type {Boolean}
-       */
-      minimize: true
-    },
+    optimization: debug
+      ? {}
+      : {
+        /**
+           * For production we can uglify the .js files.
+           * @type {Boolean}
+           */
+        minimize: true
+      },
     /**
      * The plugins option is used to customize the Webpack build process in
      * different ways. We can run different plugins depending on the environment.
      * @type {Array}
      */
-    plugins: debug ? [
-      /**
-       * Enable hot option under devServer.
-       * @type {Object}
-       */
-      hotModuleReplacementPlugin,
-      /**
-       * Enable .html files script bundling and minimization (check html-loader).
-       * @type {Object}
-       */
-      htmlWebpackPlugin,
-      /**
-       * Enables hard disk file writting for html script injection. This way
-       * Webpack's dev server will see the injected script.
-       * @type {[type]}
-       */
-      htmlWebpackHarddiskPlugin,
-      /**
-       * Extracts css from the bundle.
-       * @type {[type]}
-       */
-      extractTextPlugin
-    ] : [
-      /**
-       * We can clear the content from our dist folder before every build:prod
-       * by utilising the clean-webpack-plugin https://github.com/johnagan/clean-webpack-plugin
-       * @type {Object}
-       */
-      cleanWebpackPlugin,
-      htmlWebpackPlugin,
-      htmlWebpackHarddiskPlugin,
-      extractTextPlugin,
-      /**
-       * Official docs https://github.com/webpack/docs/wiki/optimization:
-       * Webpack gives our modules and chunks ids to identify them. Webpack can
-       * vary the distribution of the ids to get the smallest id length for
-       * often used ids with a simple option.
-       * @type {Object}
-       */
-      occurrenceOrderPlugin
-    ]
+    plugins: debug
+      ? [
+        /**
+           * Enable hot option under devServer.
+           * @type {Object}
+           */
+        hotModuleReplacementPlugin,
+        /**
+           * Enable .html files script bundling and minimization (check html-loader).
+           * @type {Object}
+           */
+        htmlWebpackPlugin,
+        /**
+           * Enables hard disk file writting for html script injection. This way
+           * Webpack's dev server will see the injected script.
+           * @type {[type]}
+           */
+        htmlWebpackHarddiskPlugin,
+        /**
+           * Extracts css from the bundle.
+           * @type {[type]}
+           */
+        extractTextPlugin
+      ]
+      : [
+        /**
+           * We can clear the content from our dist folder before every build:prod
+           * by utilising the clean-webpack-plugin https://github.com/johnagan/clean-webpack-plugin
+           * @type {Object}
+           */
+        cleanWebpackPlugin,
+        htmlWebpackPlugin,
+        htmlWebpackHarddiskPlugin,
+        extractTextPlugin,
+        /**
+           * Official docs https://github.com/webpack/docs/wiki/optimization:
+           * Webpack gives our modules and chunks ids to identify them. Webpack can
+           * vary the distribution of the ids to get the smallest id length for
+           * often used ids with a simple option.
+           * @type {Object}
+           */
+        occurrenceOrderPlugin
+      ]
   }
 }
