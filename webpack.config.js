@@ -4,6 +4,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const occurrenceOrderPlugin = new webpack.optimize.OccurrenceOrderPlugin()
 const hotModuleReplacementPlugin = new webpack.HotModuleReplacementPlugin()
@@ -31,6 +32,9 @@ const extractTextPlugin = new ExtractTextPlugin({
    * @type {String}
    */
   filename: 'css/index.css'
+})
+const copyWebpackPlugin = new CopyWebpackPlugin([{ from: '../favicon.ico' }], {
+  copyUnmodified: true
 })
 
 module.exports = env => {
@@ -87,7 +91,7 @@ module.exports = env => {
        * webpack-dev-server.
        * @type {Number}
        */
-      port: 8889,
+      port: 8894,
       /**
        * We can control what bundle information is displayed. To show only errors
        * more info on stats options https://webpack.js.org/configuration/stats
@@ -325,7 +329,12 @@ module.exports = env => {
            * Extracts css from the bundle.
            * @type {[type]}
            */
-        extractTextPlugin
+        extractTextPlugin,
+        /**
+           * Copy static files such as favicon.ico.
+           * @type {Object}
+           */
+        copyWebpackPlugin
       ]
       : [
         /**
@@ -344,7 +353,8 @@ module.exports = env => {
            * often used ids with a simple option.
            * @type {Object}
            */
-        occurrenceOrderPlugin
+        occurrenceOrderPlugin,
+        copyWebpackPlugin
       ]
   }
 }
